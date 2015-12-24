@@ -1,0 +1,172 @@
+Install Virtual Box
+
+If no network -
+    Modify /etc/sysconfig/network-scripts/ifcfg-eth0 and enable onboot=yes
+	service network restart
+
+yum install openssh-server openssh-clients wget -y
+chkconfig sshd on
+service sshd restart
+
+yum update
+
+Open the following ports in Virtual Box NAT
+22,8888,8088,60010,50060,50030,50075,50070,9000,22,50010,50020,50090
+8032,8033,8042,19888
+60000,60010,60020,60030,8080,8085,9090
+
+
+
+
+Login via putty from here onwards, enable port forwarding in NAT -
+
+	#Disable firewall, this should be okay for local install
+	service iptables save
+	service iptables stop
+	chkconfig iptables off
+
+
+  Modify yum configuration for downloads from the local ixat proxy
+   
+  
+ Check for existance of Java
+   java -version
+
+ if the above command errors out, download java from Oracle and install the same using the below set of steps
+    
+    ##### Start java setup steps
+    cd /opt/
+	
+	#Download Java from oracle (or) pick this from the share
+	wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u66-b17/jdk-8u66-linux-x64.tar.gz"
+
+	tar xzf jdk-8u66-linux-x64.tar.gz  
+
+    cd /opt/jdk1.8.0_66/
+    
+    alternatives --install /usr/bin/java java /opt/jdk1.8.0_66/bin/java 2
+    
+    alternatives --config java
+
+
+    alternatives --install /usr/bin/jar jar /opt/jdk1.8.0_66/bin/jar 2
+    alternatives --install /usr/bin/javac javac /opt/jdk1.8.0_66/bin/javac 2
+    alternatives --set jar /opt/jdk1.8.0_66/bin/jar
+    alternatives --set javac /opt/jdk1.8.0_66/bin/javac 
+
+
+    
+    ##### End java setup steps
+
+
+#Create a new user to run hadoop 
+  adduser hduser
+  passwd hduser
+
+#setup seemless ssh login for hduser
+su - hduser
+ssh-keygen -t rsa
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+chmod 0600 ~/.ssh/authorized_keys
+
+##add the host name in /etc/hosts under 127.0.0.1 IP
+
+#test seemless ssh, there should be no password prompt if everything is done proper
+ssh localhost
+
+### use hduser here onwards
+
+###### Add the below lines to ~/.bashrc
+
+    	export JAVA_HOME=/opt/jdk1.8.0_66
+    	export JRE_HOME=/opt/jdk1.8.0_66/jre
+    	export PATH=$PATH:/opt/jdk1.8.0_66/bin:/opt/jdk1.8.0_66/jre/bin
+
+
+
+#download hadoop (copy from pendrive)
+wget http://apache.claz.org/hadoop/common/hadoop-2.6.0/hadoop-2.6.0.tar.gz
+tar xzf hadoop-2.6.0.tar.gz
+mv hadoop-2.6.0 hadoop
+
+export HADOOP_HOME=/home/hduser/hadoop
+export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+export HADOOP_CONF=$HADOOP_HOME/etc/hadoop
+
+source ~/.bashrc
+
+modify JAVA_HOME in $HADOOP_HOME/etc/hadoop/hadoop-env.sh 
+export JAVA_HOME=/opt/jdk1.8.0_66/ (or) to the path where JDK is available on your host
+
+##Verify hadoop setup
+hadoop version
+
+##Edit configuration
+cd $HADOOP_HOME/etc/hadoop
+
+###core-site.xml
+<configuration>
+<property>
+  <name>fs.default.name</name>
+    <value>hdfs://localhost:9000</value>
+</property>
+</configuration>
+
+##hdfs-site.xml
+<configuration>
+<property>
+ <name>dfs.replication</name>
+ <value>1</value>
+</property>
+
+<property>
+  <name>dfs.name.dir</name>
+    <value>file:///home/hduser/hadoopdata/hdfs/namenode</value>
+</property>
+
+<property>
+  <name>dfs.data.dir</name>
+    <value>file:///home/hduser/hadoopdata/hdfs/datanode</value>
+</property>
+</configuration>
+
+
+#format NN
+hdfs namenode -format
+
+#start dfs
+start-dfs.sh
+
+#Verify if all required processes are up and running
+ps -eaf | grep java
+jps
+ 
+
+#stop dfs
+stop-dfs.sh
+
+
+
+
+
+### Access namenode via browser
+http://localhost:50070/
+
+##Info on the cluster (if yarn is running)
+http://localhost:8088/
+
+##Secondary namenode
+http://localhost:50090/
+
+##DataNode
+http://localhost:50075/
+
+
+
+
