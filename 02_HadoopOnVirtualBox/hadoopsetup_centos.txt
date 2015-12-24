@@ -15,8 +15,8 @@ Open the following ports in Virtual Box NAT
 8032,8033,8042,19888
 60000,60010,60020,60030,8080,8085,9090
 
-
-
+##Disable IPV6
+echo "net.ipv6.conf.all.disable_ipv6=1" >> /etc/sysctl.conf ; cat /etc/sysctl.conf ; 
 
 Login via putty from here onwards, enable port forwarding in NAT -
 
@@ -113,9 +113,29 @@ cd $HADOOP_HOME/etc/hadoop
 ###core-site.xml
 <configuration>
 <property>
-  <name>fs.default.name</name>
+  <name>fs.defaultFS</name>
     <value>hdfs://localhost:9000</value>
 </property>
+<property>
+  <name>dfs.namenode.rpc-bind-host</name>
+  <value>0.0.0.0</value>
+</property>
+
+<property>
+  <name>dfs.namenode.servicerpc-bind-host</name>
+  <value>0.0.0.0</value>
+</property>
+
+<property>
+  <name>dfs.namenode.http-bind-host</name>
+  <value>0.0.0.0</value>
+</property>
+
+<property>
+  <name>dfs.namenode.https-bind-host</name>
+  <value>0.0.0.0</value>
+</property>
+
 </configuration>
 
 ##hdfs-site.xml
