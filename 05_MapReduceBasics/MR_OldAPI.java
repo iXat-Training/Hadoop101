@@ -1,4 +1,3 @@
-package twok.hadoop.mapreduce;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -22,14 +21,9 @@ import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
 
-public class OldAPIMRTemplate {
+public class MRv1Template {
 
-	/**
-	 * @param args
-	 * @author Nagamallikarjuna
-	 * @throws IOException
-	 */
-	
+
 	public static class MyMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable>
 	{
 		public void map(LongWritable key, Text value,
@@ -59,7 +53,7 @@ public class OldAPIMRTemplate {
 		JobConf job = new JobConf(conf);
 		job.setJobName("Name of the Job");
 		
-		job.setJarByClass(OldAPIMRTemplate.class);
+		job.setJarByClass(MRv1Template.class);
 		
 		job.setMapperClass(MyMapper.class);
 		job.setReducerClass(MyReducer.class);

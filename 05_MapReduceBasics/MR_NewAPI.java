@@ -1,4 +1,3 @@
-package twok.hadoop.mapreduce;
 
 import java.io.IOException;
 
@@ -15,13 +14,8 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class NewAPIMRTemplate {
+public class MRv2Template {
 
-	/**
-	 * @param args
-	 * @author Nagamallikarjuna
-	 * @throws IOException
-	 */
 	
 	public static class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable>
 	{
@@ -44,9 +38,9 @@ public class NewAPIMRTemplate {
 	{
 		Configuration conf = new Configuration();
 		
-		Job job = new Job(conf, "Finding the total stock volumes");
+		Job job = new Job(conf, "Just a template using the new MR API's");
 		
-		job.setJarByClass(NewAPIMRTemplate.class);
+		job.setJarByClass(MRv2Template.class);
 		
 		job.setMapperClass(MyMapper.class);
 		job.setReducerClass(MyReducer.class);

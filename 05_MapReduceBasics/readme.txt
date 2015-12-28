@@ -1,0 +1,1 @@
+Here are the templates that one could use for writing MR Jobs, two templates are provivided, one for MRv1 and another for MRv2
