@@ -1,0 +1,8 @@
+package com.ixat.job.chaining.counters;
+
+public enum TRANSFORMATIONCOUNTERS {
+	LOWERCASE_TRANSFORMATION,
+	NWRECORD_ELIMINATIONS,
+	WORD_SPLITS
+	
+}
