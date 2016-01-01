@@ -38,7 +38,7 @@ public class SOWikiAnalyzer extends Configured implements Tool {
 				.getInstance(conf,
 						"Stackoverflow Analytics");
 		if (args.length < 2) {
-			System.out.println("usage SOWikiAnalyzer <infile> <outdir> [NumerOfReducers]");
+			System.out.println("usage SOWikiAnalyzer <infile> <outdir> [NumerOfReducers] [UserCombiner=true|false]");
 			return -100;
 		}
 		
@@ -57,13 +57,16 @@ public class SOWikiAnalyzer extends Configured implements Tool {
 		
 		job.setMapperClass(WikiLinkMapper.class);
 		job.setReducerClass(WikiLinkReducer.class);
+		
+		if(args.length>3 && args[3].toLowerCase().equals("true"))
+			job.setCombinerClass(WikiLinkReducer.class);
 
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 
 		job.setNumReduceTasks(numReducers);
 		
-		job.setPartitionerClass(PostIDPartitioner.class);
+		job.setPartitionerClass(UserIDPartitioner.class);
 		
 		
 		if (job.waitForCompletion(true)) {
@@ -93,6 +96,13 @@ public class SOWikiAnalyzer extends Configured implements Tool {
 				String Id = element.getAttribute("Id").toString();
 				String PostTypeId = element.getAttribute("PostTypeId").toString();
 				String Body = element.getAttribute("Body").toString();
+				String UserID = "0";
+				if(element.getAttribute("OwnerUserId")!=null){
+					UserID = element.getAttribute("OwnerUserId").toString();
+					//Ideally
+					// return;
+				
+				}
 				
 				if(Id!=null &&
 						PostTypeId!=null &&
@@ -107,8 +117,8 @@ public class SOWikiAnalyzer extends Configured implements Tool {
 					int endIndex = Body.indexOf("\"", startIndex+1);
 					String wikiLink = Body.substring(startIndex+1, endIndex);
 					
-					tid.set(Id);	
-					tlink.set(wikiLink);
+					tid.set(Id+ ":" + UserID);	
+					tlink.set(wikiLink );
 					context.write(tlink,  tid);
 					
 				}
@@ -137,15 +147,15 @@ public class SOWikiAnalyzer extends Configured implements Tool {
 	    }
 	}
 	
-	public static class PostIDPartitioner extends Partitioner<Text,Text> 
+	public static class UserIDPartitioner extends Partitioner<Text,Text> 
 implements Configurable{
 		
 		private Configuration config;
 		public int getPartition(Text key, Text value, int numReducers) {
-			//return 0
-			//fill the logic here to equi-distribute the data on PostID....
-			//currently the logic return's 0, i.e. the rows are sent to first reducer only
-			return 0;
+			
+			String[] parts = value.toString().split("\\:");
+			int userId = Integer.parseInt(parts[1]);
+			return userId % numReducers;
 			
 		}
 
