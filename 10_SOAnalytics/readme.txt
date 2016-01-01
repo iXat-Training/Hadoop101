@@ -1,3 +1,5 @@
+Deriving an InvertedIndex on StackOverflow posts and Joins...
+
 SOWikiAnalyzer sample which demonstrates the following
   - Inverted Index on Stackoverflow feed (you can get the feed content from https://archive.org/download/stackexchange)
   
