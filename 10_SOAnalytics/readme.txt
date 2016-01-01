@@ -10,7 +10,7 @@ SOWikiAnalyzer sample which demonstrates the following
   - A combiner for optimization
 
 
-SOJoin - A more sample to demonstrate ReduceSide Inner Join - 
+SOJoin - One more sample to demonstrate ReduceSide Inner Join - 
 
  
 
