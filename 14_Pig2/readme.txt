@@ -33,7 +33,7 @@ open grunt
 stocks = Load '/stocks/stocks.csv' USING PigStorage(',') AS  (SYMBOL:chararray, DATE:chararray, HI:double, LO:double, OPEN:double, CLOSE:double, TVTRADED:long) ;
 stocks_meta = Load '/stocks/stock_meta.csv' USING PigStorage(',') AS (SYMBOL:chararray, STOCKNAME:chararray);
 S2 = JOIN stocks by SYMBOL , stocks_meta by SYMBOL;
-s = GROUP S2 BY stocks_meta::STOCKNAME;
+S3 = GROUP S2 BY stocks_meta::STOCKNAME;
 S4 = FOREACH S3 GENERATE TRIM(group), SUM( S2.stocks::TVTRADED ) AS SUMOFTVTRADED;
 
 
