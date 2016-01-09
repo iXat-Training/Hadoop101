@@ -53,6 +53,12 @@ INSERT INTO TABLE stocks_cp PARTITION (stock_name='MSFT')  select trade_date, hi
 INSERT INTO TABLE stocks_cp PARTITION (stock_name='APPL')  select trade_date, hi, lo, open, close, traded_volume from stocks where stock_name = 'APPL';
 INSERT INTO TABLE stocks_cp PARTITION (stock_name='YHOO')  select trade_date, hi, lo, open, close, traded_volume from stocks where stock_name = 'YHOO';
 
+---or you could use the below syntax to determine partition dynamically
+INSERT OVERWRITE TABLE stocks_cp  PARTITION (stock_name) select stock_name, trade_date, hi, lo, open, close, traded_volume from stocks
+
+
+SELECT key, value, ds, hr FROM srcpart WHERE ds is not null and hr>10;
+
 ---examine the warehouse structure
 
 ---now lets create a RC file instead of text
