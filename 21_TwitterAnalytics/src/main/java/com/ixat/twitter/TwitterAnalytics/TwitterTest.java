@@ -12,10 +12,10 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterTest {
 
 	public static void main(String[] args) throws InterruptedException {
-		String consumerKey = "ESHO3IKmWS7vgvzbZDvN7FVeZ";
-    	String consumerSecret = "Rurs34lomZYX9Omx3lADTkOSqx7aDcNEZ2Yv5PnH1c09k8jEF8";
-    	String token = "329271601-U0ezMTw2mssG9pARidPf7FoVkT5vy2VOSAJPBeBs";
-    	String secret = "5uyU62XSxtBpwO9kXRD5W4NFAtVLztNAuaKMDWL3Hfkdb";
+		String consumerKey = "ssssssssss";
+    	String consumerSecret = "xxxxxxxxxxxx";
+    	String token = "tttttttt-ttttttttttt";
+    	String secret = "ddddddddd";
     	
         run(consumerKey,consumerSecret,token,secret);
 

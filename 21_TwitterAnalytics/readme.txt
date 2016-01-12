@@ -11,6 +11,9 @@ Requirements -
 	Generate a Timeseries graph (or a scatter) in Tableu on the sentiment score and with count of tweets.
 	Write a utility which would take hour of the day as input and displays all the possible sentiment scores and #count of tweets for that hour. When given a sentiment score and hour, the utility should fetch all originall tweets which fall in this criteria.
 
+Generate your own OAUTH tokens (the access keys) to access twitter over here - https://apps.twitter.com/, i have masked mine in the source.
+
+
 Technologies to use
 	Twitter4j
 	Flume
