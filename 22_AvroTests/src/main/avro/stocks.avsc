@@ -1,0 +1,13 @@
+{"namespace": "com.ixat.avro.model",
+ "type": "record",
+ "name": "Stock",
+ "fields": [
+     {"name": "symbol", "type": "string"},
+     {"name": "trade_date",  "type": "string"},
+     {"name": "open_price",  "type": "double"},
+	 {"name": "close_price",  "type": "double"},
+	 {"name": "hi_price",  "type": "double"},
+	 {"name": "low_price",  "type": "double"},
+	 {"name": "trade_volume",  "type": "long"}
+ ]
+}
