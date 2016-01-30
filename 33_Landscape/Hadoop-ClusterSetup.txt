@@ -1,0 +1,176 @@
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java7-installer
+
+###Updata Java runtime
+sudo update-java-alternatives -s java-7-oracle
+
+###Disable IPv6
+sudo sed -i 's/net.ipv6.bindv6only\ =\ 1/net.ipv6.bindv6only\ =\ 0/' \
+/etc/sysctl.d/bindv6only.conf && sudo invoke-rc.d procps restart
+
+
+
+# Create hadoop group
+$ groupadd hadoop
+# Create hdtest user
+$ adduser -m -G hadoop hdtest
+$ passwd hdtest
+
+###On the master
+# Login as hdtest
+$ su - hdtest
+#Generate a ssh key for the user
+$ssh-keygen -t rsa -P ""
+cat /home/hdtest/.ssh/id_rsa.pub >> /home/hdtest/.ssh/authorized_keys
+
+chmod 600 /home/hdtest/.ssh/authorized_keys
+
+##Repeat this for all the slaves
+ssh-copy-id -i ~/.ssh/id_rsa.pub hdtest@slave1
+ssh-copy-id -i ~/.ssh/id_rsa.pub hdtest@slave2
+
+##check if you can do a seemless ssh
+ssh <slaveHost1>
+ssh <slaveHost2>
+ssh <slaveHost3>
+
+###on all hosts (login as hdtest user)
+cd /home/hdtest
+wget http://www.us.apache.org/dist/hadoop/core/hadoop-2.7.2/hadoop-2.7.2.tar.gz
+tar xvfz hadoop-2.7.2.tar.gz
+mv hadoop-2.7.2 hadoop
+
+
+###Create env variables
+# Set HADOOP_HOME
+export HADOOP_HOME=/home/hdtest/hadoop
+# Set JAVA_HOME 
+export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+# Add Hadoop bin and sbin directory to PATH
+export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$JAVA_HOME/bin
+
+##add JAVA_HOME to hadoop_env.sh on all hosts
+export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+
+
+#Update configuration (On Master)
+/home/hdtest/hadoop/etc/hadoop/core-site.xml
+			<property>
+			  <name>hadoop.tmp.dir</name>
+			  <value>/home/hdtest/hadoop/tmp</value>
+			  <description>The Temporary Directory.</description>
+			</property>
+
+			<property>
+			  <name>fs.defaultFS</name>
+			  <value>hdfs://<MasterHostName>:54310</value>
+			  <description>Use HDFS NN Address</description>
+			</property>
+
+/home/hdtest/hadoop/etc/hadoop/mapred-site.xml
+		<property>
+			 <name>mapreduce.framework.name</name>
+			 <value>yarn</value>
+			 <description>The framework for running mapreduce jobs</description>
+		</property>
+
+/home/hdtest/hadoop/etc/hadoop/yarn-site.xml
+		<property>
+		 <name>yarn.nodemanager.aux-services</name>
+		 <value>mapreduce_shuffle</value>
+		</property>
+		<property>
+		 <name>yarn.resourcemanager.scheduler.address</name>
+		 <value>master1:8030</value>
+		</property> 
+		<property>
+		 <name>yarn.resourcemanager.address</name>
+		 <value>master1:8032</value>
+		</property>
+		<property>
+		  <name>yarn.resourcemanager.webapp.address</name>
+		  <value>master1:8088</value>
+		</property>
+		<property>
+		  <name>yarn.resourcemanager.resource-tracker.address</name>
+		  <value>master1:8031</value>
+		</property>
+		<property>
+		  <name>yarn.resourcemanager.admin.address</name>
+		  <value>master1:8033</value>
+		</property>
+		  <property>
+               <name>yarn.application.classpath</name>
+               <value>
+                    $HADOOP_HOME/etc/hadoop,
+                    $HADOOP_HOME/share/hadoop/common/*,
+                    $HADOOP_HOME/share/hadoop/common/lib/*,
+                    $HADOOP_HOME/share/hadoop/hdfs/*,
+                    $HADOOP_HOME/share/hadoop/hdfs/lib/*,
+                    $HADOOP_HOME/share/hadoop/yarn/*,
+                    $HADOOP_HOME/share/hadoop/yarn/lib/*,
+                    $HADOOP_HOME/share/hadoop/mapreduce/*,
+                    $HADOOP_HOME/share/hadoop/mapreduce/lib/*
+               </value>
+        </property>
+
+
+
+/home/hdtest/hadoop/etc/hadoop/hdfs-site.xml 
+		<property>
+		 <name>dfs.replication</name>
+		 <value>2</value>
+		</property>
+		<property>
+		 <name>dfs.namenode.name.dir</name>
+		 <value>/home/hdtest/hadoop-data/namenode</value>
+		 <description>Determines where on the local filesystem the DFS name node should store the name table(fsimage). If this is a comma-delimited list of directories then the name table is replicated in all of the directories, for redundancy. You may want to place this dir on a volume which has good storage
+		 </description>
+		</property>
+		<property>
+		 <name>dfs.datanode.data.dir</name>
+		 <value>/home/hdtest/hadoop-data/datanode</value>
+		 <description>Determines where on the local filesystem an DFS data node should store its blocks. If this is a comma-delimited list of directories, then data will be stored in all named directories, typically on different devices. Directories that do not exist are ignored.
+		 </description>
+		</property>
+
+/home/hdtest/hadoop/etc/hadoop/slaves
+slaveNode1
+slaveNode2
+....
+
+#Distribute core-site.xml, hdfs-site.xml and yarn-site.xml to all slaves, you may not need all the properties in slave hosts.
+
+###On the master
+$ hdfs namenode -format
+$ /home/hdtest/hadoop/sbin/start-dfs.sh
+$ /home/hdtest/hadoop/sbin/start-yarn.sh
+
+##Checks
+http://master1:8088/cluster/nodes
+
+##Execute an example (on a master/edge node)
+$ hadoop jar /home/hdtest/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar pi 2 3
+
+
+
+
+
+Optimizations -
+  - we could use rsync instead of copying stuff to all the slaves
+
+
+Safe way to remove a running data node
+####Add this to hdfs-site.xml
+<property>
+   <name>dfs.hosts.exclude</name>
+   <value>/home/hdtest/hadoop/datanode-excludes</value>
+</property>
+
+
+###Create /home/hdtest/hadoop/datanode-excludes with all nodes that you want to decomm
+
+"sbin/*distribute-exclude.sh" *
+	for older versions
+	hdfs dfsadmin -refreshNodes
